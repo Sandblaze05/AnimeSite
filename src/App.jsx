@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Card from "./components/card";
 import DetailedCard from "./components/detailedCard";
+import SkeletonDetailedCard from "./components/skeletonDetailedCard";
+import SkeletonCard from "./components/skeletonCard";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const API_BASE_URL = "https://api.jikan.moe/v4/";
 
@@ -24,7 +27,7 @@ const App = () => {
       const data = await response.json();
       console.log(data);
 
-      if (data.error!=null || data.status == 404) {
+      if (data.error != null || data.status == 404) {
         setErrorMessage(data.error || "Failed to fetch data");
         setAnime([]);
         return;
@@ -48,7 +51,7 @@ const App = () => {
       }
       const data1 = await result.json();
       console.log(data1);
-      if (data1.error!=null || data1.status == 404) {
+      if (data1.error != null || data1.status == 404) {
         setErrorMessageCurrentAnime(data1.error || "Failed to fetch data");
         setCurrentAnime([]);
         return;
@@ -83,28 +86,61 @@ const App = () => {
         </header>
 
         <section className="relative p-4 z-30">
-          <div className="relative flex flex-wrap justify-left gap-6 p-6 overflow-x-auto">
-            {loadingCurrentAnime ? (
-              <p>loading</p>
-            ) : errorMessageCurrentAnime ? (
-              <p className="text-red-500">{errorMessageCurrentAnime}</p>
-            ) : (
-              <ul className="flex gap-4 list-none p-2 sm:overflow-x-auto scrollbar-hidden">
-                {currentAnime.map((item) => (
-                  <li key={item.mal_id}>
-                    <DetailedCard
-                      title={item.title}
-                      image={item.images.webp.image_url}
-                      rating={item.score}
-                      status={item.status}
-                      genres={item.genres}
-                      season={item.season}
-                      episodes={item.episodes}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div className="relative overflow-hidden">
+            {" "}
+            {/* Left scroll button */}
+            <button
+              onClick={() => {
+                const container = document.querySelector(".scroll-content");
+                container.scrollBy({ left: -400, behavior: "smooth" });
+              }}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-40 bg-[#1a0e2b]/80 hover:bg-[#290a4a] p-2 rounded-r-xl 
+            text-[#ff3d7f] shadow-lg shadow-[#ff3d7f]/30 hover:shadow-[#ff3d7f]/50 transition-all duration-300"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            {/* Right scroll button */}
+            <button
+              onClick={() => {
+                const container = document.querySelector(".scroll-content");
+                container.scrollBy({ left: 400, behavior: "smooth" });
+              }}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-40 bg-[#1a0e2b]/80 hover:bg-[#290a4a] p-2 rounded-l-xl 
+            text-[#ff3d7f] shadow-lg shadow-[#ff3d7f]/30 hover:shadow-[#ff3d7f]/50 transition-all duration-300"
+            >
+              <ChevronRight size={24} />
+            </button>
+            <div className="scroll-content overflow-x-auto scrollbar-hidden">
+              {loadingCurrentAnime ? (
+                <ul className="flex gap-4 list-none p-2">
+                  {" "}
+                  {[...Array(6)].map((_, index) => (
+                    <li key={index} className="flex-shrink-0">
+                      <SkeletonDetailedCard />
+                    </li>
+                  ))}
+                </ul>
+              ) : errorMessageCurrentAnime ? (
+                <p className="text-red-500">{errorMessageCurrentAnime}</p>
+              ) : (
+                <ul className="flex gap-4 list-none p-2">
+                  {" "}
+                  {currentAnime.map((item) => (
+                    <li key={item.mal_id} className="flex-shrink-0">
+                      <DetailedCard
+                        title={item.title}
+                        image={item.images.webp.image_url}
+                        rating={item.score}
+                        status={item.status}
+                        genres={item.genres}
+                        season={item.season}
+                        episodes={item.episodes}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </section>
 
@@ -115,23 +151,56 @@ const App = () => {
             </span>
             Animes
           </h3>
-          <div className="relative flex flex-wrap justify-left gap-6 p-6 overflow-x-auto">
-            {loading ? (
-              <p>loading</p>
-            ) : errorMessage ? (
-              <p className="text-red-500">{errorMessage}</p>
-            ) : (
-              <ul className="flex gap-4 list-none p-2 sm:overflow-x-auto scrollbar-hidden">
-                {anime.map((item) => (
-                  <li key={item.mal_id}>
-                    <Card
-                      title={item.title}
-                      image={item.images.webp.image_url}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
+
+          <div className="relative overflow-hidden">
+            {/* Left scroll button */}
+            <button
+              onClick={() => {
+                const container = document.querySelector(".top-anime-scroll");
+                container.scrollBy({ left: -400, behavior: "smooth" });
+              }}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-40 bg-[#1a0e2b]/80 hover:bg-[#290a4a] p-2 rounded-r-xl 
+         text-[#ff3d7f] shadow-lg shadow-[#ff3d7f]/30 hover:shadow-[#ff3d7f]/50 transition-all duration-300"
+            >
+              <ChevronLeft size={24} />
+            </button>
+
+            {/* Right scroll button */}
+            <button
+              onClick={() => {
+                const container = document.querySelector(".top-anime-scroll");
+                container.scrollBy({ left: 400, behavior: "smooth" });
+              }}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-40 bg-[#1a0e2b]/80 hover:bg-[#290a4a] p-2 rounded-l-xl 
+         text-[#ff3d7f] shadow-lg shadow-[#ff3d7f]/30 hover:shadow-[#ff3d7f]/50 transition-all duration-300"
+            >
+              <ChevronRight size={24} />
+            </button>
+
+            <div className="top-anime-scroll overflow-x-auto scrollbar-hidden p-6">
+              {loading ? (
+                <ul className="flex gap-4 list-none p-2">
+                  {[...Array(8)].map((_, index) => (
+                    <li key={index} className="flex-shrink-0">
+                      <SkeletonCard />
+                    </li>
+                  ))}
+                </ul>
+              ) : errorMessage ? (
+                <p className="text-red-500">{errorMessage}</p>
+              ) : (
+                <ul className="flex gap-4 list-none p-2">
+                  {anime.map((item) => (
+                    <li key={item.mal_id} className="flex-shrink-0">
+                      <Card
+                        title={item.title}
+                        image={item.images.webp.image_url}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </section>
       </div>

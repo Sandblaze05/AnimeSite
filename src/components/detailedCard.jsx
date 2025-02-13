@@ -12,7 +12,7 @@ const DetailedCard = ({
     // console.log(title.length);
   return (
     <div
-      className="relative w-70 h-[600px] p-4 rounded-2xl shadow-lg shadow-[#ff3d7f]/30 
+      className="relative w-70 h-[600px] p-4 mb-2 rounded-2xl shadow-lg shadow-[#ff3d7f]/30 
       bg-gradient-to-b from-[#1a0e2b]/60 to-[#290a4a]/60 border border-[#ff3d7f]/20 
       backdrop-blur-xl bg-opacity-20 hover:shadow-[#ff3d7f]/50 transition-all duration-300 flex flex-col"
     >
