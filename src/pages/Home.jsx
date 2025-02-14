@@ -1,31 +1,55 @@
 import React, { useEffect, useState } from "react";
 import Card from "../components/card";
+import Search from "../components/search";
 import DetailedCard from "../components/detailedCard";
-import SkeletonDetailedCard from "../components/skeletonDetailedCard";
-import SkeletonCard from "../components/skeletonCard";
+import SkeletonDetailedCard from "../skeletons/skeletonDetailedCard";
+import SkeletonCard from "../skeletons/skeletonCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useDebounce } from "react-use";
 
 const API_BASE_URL = "https://api.jikan.moe/v4/";
 
 const Home = () => {
+  
   {/* top anime */}
   const [anime, setAnime] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  { /* current anime */ }
+  {/* current anime */}
   const [currentAnime, setCurrentAnime] = useState([]);
   const [loadingCurrentAnime, setLoadingCurrentAnime] = useState(false);
   const [errorMessageCurrentAnime, setErrorMessageCurrentAnime] = useState("");
 
-  { /* top movies */ }
+  {/* top movies */}
   const [topMovies, setTopMovies] = useState([]);
   const [loadingTopMovies, setLoadingTopMovies] = useState(false);
   const [errorMessageTopMovies, setErrorMessageTopMovies] = useState("");
 
-  const navigate = useNavigate();
+  {/*Search*/}
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [queryResponse, setQueryResponse] = useState([]);
 
+  useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
+  const navigate = useNavigate();
+  
+
+  const fetchQuery = async ( query='' ) => {
+    try {
+      if(query!=''){
+        const res = await fetch(`${API_BASE_URL}anime?q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error("Error in search");
+        const s = await res.json();
+        console.log(s);
+        setQueryResponse(s);
+      }
+    } catch (error) {
+      console.log(error.message || "Error in search");
+    }
+  };
+  
   const fetchAnime = async () => {
     try {
       setLoading(true);
@@ -35,7 +59,6 @@ const Home = () => {
         throw new Error("Failed to fetch data");
       }
       const data = await response.json();
-      console.log(data);
 
       if (data.error != null || data.status == 404) {
         setErrorMessage(data.error || "Failed to fetch data");
@@ -60,7 +83,6 @@ const Home = () => {
         throw new Error("Failed to fetch data");
       }
       const data1 = await result.json();
-      console.log(data1);
       if (data1.error != null || data1.status == 404) {
         setErrorMessageCurrentAnime(data1.error || "Failed to fetch data");
         setCurrentAnime([]);
@@ -75,7 +97,7 @@ const Home = () => {
     }
   };
 
-  const fetchTopMovies = async () => {
+  const fetchTopMovies = async (retryCount=3, delay=1000) => {
     try {
       setLoadingTopMovies(true);
       const result1 = await fetch(`${API_BASE_URL}top/anime?type=movie&sfw`);
@@ -83,22 +105,23 @@ const Home = () => {
         throw new Error("Failed to fetch data");
       }
       const data2 = await result1.json();
-      console.log(data2);
       if (data2.error != null || data2.status == 404) {
         setErrorMessageTopMovies(data2.error || "Failed to fetch data");
         setTopMovies([]);
         return;
       }
       setTopMovies(data2.data || []);
-    }
-    catch (error) {
+    } catch (error) {
       setErrorMessageTopMovies(error.message);
       setTopMovies([]);
-    }
-    finally {
+      if(retryCount>0){
+        console.warn(`Retrying... (${4-retryCount}/3)`);
+        setTimeout(() => fetchTopMovies(retryCount-1, delay*2), delay);
+      }
+    } finally {
       setLoadingTopMovies(false);
     }
-  }
+  };
 
   useEffect(() => {
     fetchAnime();
@@ -106,19 +129,29 @@ const Home = () => {
     fetchTopMovies();
   }, []);
 
+  useEffect(() => {
+    fetchQuery(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
+
   return (
     <main>
       <div>
         <header
-          className="sticky top-0 z-50 flex items-center justify-center p-4  
-                    bg-gradient-to-r from-[#1a0e2b]/30 via-[#290a4a]/30 to-[#6b2254]/30 
-                    shadow-md shadow-[#ff3d7f]/30 
-                    backdrop-blur-2xl bg-opacity-20 border-b border-[#ff3d7f]/20"
+          className="sticky top-0 z-50 flex items-center justify-between p-4  
+             bg-gradient-to-r from-[#1a0e2b]/30 via-[#290a4a]/30 to-[#6b2254]/30 
+             shadow-md shadow-[#ff3d7f]/30 backdrop-blur-2xl bg-opacity-20 
+             border-b border-[#ff3d7f]/20"
         >
-          <span className="relative text-2xl font-bold bg-gradient-to-r from-[#ff758c] to-[#ff7eb3] bg-clip-text text-transparent">
-            Anime
-          </span>
-          <span className="text-2xl text-white">Site</span>
+          {/* Logo / Title */}
+          <div className="flex items-center ">
+            <span className="relative text-2xl font-bold bg-gradient-to-r from-[#ff758c] to-[#ff7eb3] bg-clip-text text-transparent">
+              Anime
+            </span>
+            <span className="text-2xl text-white">Site</span>
+          </div>
+
+          {/* Search Bar */}
+          <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
         </header>
 
         {/* Current Anime */}
@@ -181,7 +214,7 @@ const Home = () => {
             </div>
           </div>
         </section>
-        
+
         {/* Top Anime */}
         <section className="relative p-4">
           <h3 className="text-2xl font-prompt">
@@ -243,7 +276,7 @@ const Home = () => {
             </div>
           </div>
         </section>
-        
+
         {/* top movies */}
         <section className="relative p-4">
           <h3 className="text-2xl font-prompt">
@@ -305,7 +338,6 @@ const Home = () => {
             </div>
           </div>
         </section>
-        
       </div>
     </main>
   );
