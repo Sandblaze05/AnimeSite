@@ -1,6 +1,6 @@
 import React from "react";
 
-const Search = ({ searchTerm, setSearchTerm }) => {
+const Search = ({ searchTerm, setSearchTerm, onClick }) => {
   return (
     <div className="relative">
       <input
@@ -11,7 +11,7 @@ const Search = ({ searchTerm, setSearchTerm }) => {
                  focus:outline-none focus:ring-2 focus:ring-[#ff7eb3] transition" 
                  value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
+      <button className="absolute right-3 top-1/2 transform -translate-y-1/2" onClick={onClick}>
         🔍
       </button>
     </div>

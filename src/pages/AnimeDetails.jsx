@@ -145,7 +145,7 @@ const AnimeDetails = () => {
         </div>
 
         {/* Search Bar */}
-        <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} onClick={() => {if(searchTerm!='') navigate(`/search/${searchTerm}`)}}/>
       </header>
 
       {/* Anime Content */}

@@ -31,10 +31,17 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [queryResponse, setQueryResponse] = useState([]);
-
-  useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
-  const navigate = useNavigate();
+  useDebounce(() => setDebouncedSearchTerm(searchTerm), 700, [searchTerm]);
   
+  const navigate = useNavigate();
+
+  const retryTimeout = (refreshCallback, retryCount=3, delay=1000) => {
+    if(retryCount>0){
+      retryCount-=1;
+      console.warn(`Retrying... (${4-retryCount}/3)`);
+      setTimeout(() => refreshCallback(), delay);
+    }
+  };
 
   const fetchQuery = async ( query='' ) => {
     try {
@@ -63,13 +70,14 @@ const Home = () => {
       if (data.error != null || data.status == 404) {
         setErrorMessage(data.error || "Failed to fetch data");
         setAnime([]);
-        return;
+        retryTimeout(fetchAnime);
       }
 
       setAnime(data.data || []);
     } catch (error) {
       setErrorMessage(error.message);
       setAnime([]);
+      retryTimeout(fetchAnime);
     } finally {
       setLoading(false);
     }
@@ -86,18 +94,20 @@ const Home = () => {
       if (data1.error != null || data1.status == 404) {
         setErrorMessageCurrentAnime(data1.error || "Failed to fetch data");
         setCurrentAnime([]);
+        retryTimeout(fetchCurrentAnime);
         return;
       }
       setCurrentAnime(data1.data || []);
     } catch (error) {
       setErrorMessageCurrentAnime(error.message);
       setCurrentAnime([]);
+      retryTimeout(fetchCurrentAnime);
     } finally {
       setLoadingCurrentAnime(false);
     }
   };
 
-  const fetchTopMovies = async (retryCount=3, delay=1000) => {
+  const fetchTopMovies = async () => {
     try {
       setLoadingTopMovies(true);
       const result1 = await fetch(`${API_BASE_URL}top/anime?type=movie&sfw`);
@@ -108,16 +118,13 @@ const Home = () => {
       if (data2.error != null || data2.status == 404) {
         setErrorMessageTopMovies(data2.error || "Failed to fetch data");
         setTopMovies([]);
-        return;
+        retryTimeout(fetchTopMovies);
       }
       setTopMovies(data2.data || []);
     } catch (error) {
       setErrorMessageTopMovies(error.message);
       setTopMovies([]);
-      if(retryCount>0){
-        console.warn(`Retrying... (${4-retryCount}/3)`);
-        setTimeout(() => fetchTopMovies(retryCount-1, delay*2), delay);
-      }
+      retryTimeout(fetchTopMovies);
     } finally {
       setLoadingTopMovies(false);
     }
@@ -151,7 +158,7 @@ const Home = () => {
           </div>
 
           {/* Search Bar */}
-          <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm}/>
+          <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} onClick={() => {if(searchTerm!='') navigate(`/search/${searchTerm}`)}}/>
         </header>
 
         {/* Current Anime */}
