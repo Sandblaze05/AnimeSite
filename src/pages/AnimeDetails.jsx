@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import TorrentLinks from "../components/torrentLinks";
 import Search from "../components/search";
+import LoadMore from "../components/loadMore";
 import { useDebounce } from "react-use";
+import loadingGif from "../assets/miku-loading.gif"
 
 const API_BASE_URL = "https://api.jikan.moe/v4";
 
@@ -25,8 +27,9 @@ const AnimeDetails = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [queryResponse, setQueryResponse] = useState([]);
+  const [pageCount, setPageCount] = useState([]);
 
-  useDebounce(() => setDebouncedSearchTerm(searchTerm), 500, [searchTerm]);
+  useDebounce(() => setDebouncedSearchTerm(searchTerm), 700, [searchTerm]);
 
   const fetchQuery = async (query = "") => {
     try {
@@ -120,7 +123,6 @@ const AnimeDetails = () => {
     });
   };
 
-  if (loading) return <p className="text-center text-gray-400">Loading...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
   if (!anime) return null;
 
@@ -145,82 +147,94 @@ const AnimeDetails = () => {
         </div>
 
         {/* Search Bar */}
-        <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} onClick={() => {if(searchTerm!='') navigate(`/search/${searchTerm}`)}}/>
+        <Search
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          onClick={() => {
+            if (searchTerm != "") navigate(`/search/${searchTerm}`);
+          }}
+        />
       </header>
 
-      {/* Anime Content */}
-      <div
-        className="max-w-5xl mx-auto bg-[#1a0e2b] p-4 md:p-6 rounded-xl shadow-lg shadow-[#ff3d7f]/30 
-               border border-[#ff3d7f]/20 text-white mt-4 md:mt-6"
-      >
-        {/* Anime Title */}
-        <h1 className="text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-[#ff3d7f] to-[#ff7eb3] bg-clip-text text-transparent">
-          {anime?.title_english || anime?.title || "Title Not Available"}
-        </h1>
-
-        {/* Image + Info */}
-        <div className="flex flex-col md:flex-row gap-4 md:gap-6 mt-4 md:mt-6">
-          {/* Anime Image */}
-          <img
-            className="w-full md:w-72 rounded-lg shadow-lg"
-            src={anime?.images?.webp?.large_image_url || "placeholder.jpg"}
-            alt={anime?.title || "Anime Image"}
-          />
-
-          {/* Anime Details */}
-          <div className="flex flex-col justify-between">
-            <p className="text-gray-300 text-sm md:text-base">
-              {anime?.synopsis || "Synopsis not available."}
-            </p>
-
-            {/* Extra Details */}
-            <div className="mt-3 md:mt-4 text-gray-400 text-sm md:text-base">
-              <p>
-                <strong>Episodes:</strong> {anime?.episodes || "N/A"}
-              </p>
-              <p>
-                <strong>Status:</strong> {anime?.status}
-              </p>
-              <p>
-                <strong>Season:</strong> {anime?.season} {anime?.year}
-              </p>
-              <p>
-                <strong>Rating:</strong> {anime?.rating}
-              </p>
-              <p>
-                <strong>Score:</strong> ⭐ {anime?.score}
-              </p>
-            </div>
-
-            {/* Genres */}
-            <div className="mt-3 md:mt-4 flex flex-wrap gap-2">
-              {anime?.genres?.map((genre) => (
-                <span
-                  key={genre.mal_id}
-                  className="px-2 py-1 text-xs md:text-sm rounded-lg bg-[#ff3d7f]/20 text-[#ff7eb3]"
-                >
-                  {genre.name}
-                </span>
-              )) || <p>No genres available.</p>}
-            </div>
-          </div>
+      {loading ? (
+        <div className="flex items-center justify-center h-[70vh]">
+          <img src={loadingGif} alt="Loading..." className="w-30 h-24" />
         </div>
+      ) : (
+        // Anime Content (Shown After Loading)
+        <div
+          className="max-w-5xl mx-auto bg-[#1a0e2b] p-4 md:p-6 rounded-xl shadow-lg shadow-[#ff3d7f]/30 
+             border border-[#ff3d7f]/20 text-white mt-4 md:mt-6"
+        >
+          {/* Anime Title */}
+          <h1 className="text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-[#ff3d7f] to-[#ff7eb3] bg-clip-text text-transparent">
+            {anime?.title_english || anime?.title || "Title Not Available"}
+          </h1>
 
-        {/* Trailer */}
-        {anime?.trailer?.embed_url && (
-          <div className="mt-4 md:mt-6">
-            <h2 className="text-lg md:text-xl font-semibold">Trailer</h2>
-            <iframe
-              className="w-full h-52 md:h-80 mt-2 rounded-lg"
-              src={anime.trailer.embed_url}
-              title="Trailer"
-              allow="autoplay; encrypted-media; picture-in-picture"
-              sandbox="allow-scripts allow-same-origin allow-presentation"
-              allowFullScreen
-            ></iframe>
+          {/* Image + Info */}
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 mt-4 md:mt-6">
+            {/* Anime Image */}
+            <img
+              className="w-full md:w-72 rounded-lg shadow-lg"
+              src={anime?.images?.webp?.large_image_url || "placeholder.jpg"}
+              alt={anime?.title || "Anime Image"}
+            />
+
+            {/* Anime Details */}
+            <div className="flex flex-col justify-between">
+              <p className="text-gray-300 text-sm md:text-base">
+                {anime?.synopsis || "Synopsis not available."}
+              </p>
+
+              {/* Extra Details */}
+              <div className="mt-3 md:mt-4 text-gray-400 text-sm md:text-base">
+                <p>
+                  <strong>Episodes:</strong> {anime?.episodes || "N/A"}
+                </p>
+                <p>
+                  <strong>Status:</strong> {anime?.status}
+                </p>
+                <p>
+                  <strong>Season:</strong> {anime?.season} {anime?.year}
+                </p>
+                <p>
+                  <strong>Rating:</strong> {anime?.rating}
+                </p>
+                <p>
+                  <strong>Score:</strong> ⭐ {anime?.score}
+                </p>
+              </div>
+
+              {/* Genres */}
+              <div className="mt-3 md:mt-4 flex flex-wrap gap-2">
+                {anime?.genres?.map((genre) => (
+                  <span
+                    key={genre.mal_id}
+                    className="px-2 py-1 text-xs md:text-sm rounded-lg bg-[#ff3d7f]/20 text-[#ff7eb3]"
+                  >
+                    {genre.name}
+                  </span>
+                )) || <p>No genres available.</p>}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Trailer */}
+          {anime?.trailer?.embed_url && (
+            <div className="mt-4 md:mt-6">
+              <h2 className="text-lg md:text-xl font-semibold">Trailer</h2>
+              <iframe
+                className="w-full h-52 md:h-80 mt-2 rounded-lg"
+                src={anime.trailer.embed_url}
+                title="Trailer"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+                allowFullScreen
+              ></iframe>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Torrent Links */}
       <div className="p-4 md:p-6">

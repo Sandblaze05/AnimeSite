@@ -5,6 +5,7 @@ import Search from "../components/search";
 import Card from "../components/card";
 import SkeletonCard from "../skeletons/skeletonCard";
 import { useNavigate, useParams } from "react-router-dom";
+import LoadMore from "../components/loadMore";
 
 const API_BASE_URL = "https://api.jikan.moe/v4/";
 
@@ -12,22 +13,21 @@ const SearchResult = () => {
   const { query } = useParams();
   const navigate = useNavigate();
 
-  {
-    /*Search*/
-  }
+  {/*Search*/}
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [queryResponse, setQueryResponse] = useState([]);
-  const [loadingConent, setLoadingConent] = useState(false);
+  const [loadingContent, setloadingContent] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [pageCount, setPageCount] = useState([]);
   useDebounce(() => setDebouncedSearchTerm(searchTerm), 700, [searchTerm]);
 
-  const fetchQuery = async (q = "") => {
+  const fetchQuery = async (q = "", page=1, prev=[]) => {
     try {
       if (q != "") {
-        setLoadingConent(true);
+        setloadingContent(true);
         const res = await fetch(
-          `${API_BASE_URL}anime?q=${encodeURIComponent(q)}`
+          `${API_BASE_URL}anime?q=${encodeURIComponent(q)}&page=${page}`
         );
         if (!res.ok) {
           setErrorMessage("Error in search");
@@ -38,14 +38,15 @@ const SearchResult = () => {
           setErrorMessage(s.error || "Error in search");
           setQueryResponse([]);
         }
-        console.log(s);
-        setQueryResponse(s.data);
+        setQueryResponse((prevData) => [...prevData, ...s.data]);
+        setPageCount({last: s.pagination.last_visible_page, current: s.pagination.current_page});
+        console.log(pageCount);
       }
     } catch (error) {
       setErrorMessage(error);
       console.log(error.message || "Error in search");
     } finally {
-      setLoadingConent(false);
+      setloadingContent(false);
     }
   };
 
@@ -92,14 +93,14 @@ const SearchResult = () => {
           <span className="bg-gradient-to-r from-[#c9676d] to-[#e07f84] bg-clip-text text-transparent text-2xl font-bold">
             {query}
           </span>
-          Results
+          {" | Results"}
         </h3>
 
         <div className="relative overflow-hidden">
           <div className="p-6">
-            {loadingConent ? (
-              <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 list-none p-2">
-                {[...Array(8)].map((_, index) => (
+            {loadingContent ? (
+              <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 gap-y-6 list-none ">
+                {[...Array(15)].map((_, index) => (
                   <li key={index}>
                     <SkeletonCard />
                   </li>
@@ -108,7 +109,7 @@ const SearchResult = () => {
             ) : errorMessage ? (
               <p className="text-red-500">{errorMessage}</p>
             ) : (
-              <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 list-none p-2">
+              <ul className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 gap-y-6 list-none">
                 {queryResponse.map((item) => (
                   <li key={item.mal_id}>
                     <Card
@@ -122,6 +123,9 @@ const SearchResult = () => {
             )}
           </div>
         </div>
+        {pageCount.current < pageCount.last && (
+          <LoadMore onClick={() => {fetchQuery(query, pageCount.current + 1)}} loading={loadingContent} />
+        )}
       </section>
     </main>
   );
