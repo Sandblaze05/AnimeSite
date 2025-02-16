@@ -50,7 +50,7 @@ const Home = () => {
         if (!res.ok) throw new Error("Error in search");
         const s = await res.json();
         console.log(s);
-        setQueryResponse(s);
+        setQueryResponse(s.data || []);
       }
     } catch (error) {
       console.log(error.message || "Error in search");

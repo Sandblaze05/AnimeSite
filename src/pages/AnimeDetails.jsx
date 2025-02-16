@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import TorrentLinks from "../components/torrentLinks";
 import Search from "../components/search";
-import LoadMore from "../components/loadMore";
 import { useDebounce } from "react-use";
 import loadingGif from "../assets/miku-loading.gif"
 
@@ -27,7 +26,6 @@ const AnimeDetails = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [queryResponse, setQueryResponse] = useState([]);
-  const [pageCount, setPageCount] = useState([]);
 
   useDebounce(() => setDebouncedSearchTerm(searchTerm), 700, [searchTerm]);
 
@@ -40,7 +38,7 @@ const AnimeDetails = () => {
         if (!res.ok) throw new Error("Error in search");
         const s = await res.json();
         console.log(s);
-        setQueryResponse(s);
+        setQueryResponse(s.data || []);
       }
     } catch (error) {
       console.log(error.message || "Error in search");
@@ -76,17 +74,21 @@ const AnimeDetails = () => {
     const fetchEpisodes = async () => {
       try {
         const response = await fetch(
-          `https://anime-backend-psi.vercel.app/search?q=${anime?.title}`
+          `https://anime-backend-psi.vercel.app/episodes?q=${anime?.title}`
         );
         const data1 = await response.json();
         if (data1.error) throw new Error(data1.error);
         if (!isCancelled) {
-          const formattedEpisodes = data1.map((ep) => ({
-            title: ep.title || `${anime?.title}`,
-            links: ep.links[0].href || [],
+          const formattedEpisodes = Object.entries(data1).map(([episodeTitle, links]) => ({
+            title: episodeTitle || `${anime?.title}`,
+            links: links.map(link => link.href) || [],
           }));
-          setEpisodes(formattedEpisodes);
+          // Object.entries(data1).map(([episodeTitle, links]) => {
+          //   let a=links.map(link => link.href);
+          //   console.log(a);
+          // });
           console.log(formattedEpisodes);
+          setEpisodes(formattedEpisodes);
         }
       } catch (err) {
         if (!isCancelled) setError(err.message);
