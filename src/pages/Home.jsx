@@ -229,6 +229,7 @@ const Home = () => {
               Top
             </span>
             Animes
+            <div className="absolute  w-1/8 h-1 bg-gradient-to-r from-[#c9676d] to-transparent"></div>
           </h3>
 
           <div className="relative overflow-hidden">
@@ -291,6 +292,7 @@ const Home = () => {
               Top
             </span>
             Movies
+            <div className="absolute  w-1/8 h-1 bg-gradient-to-r from-[#c9676d] to-transparent"></div>
           </h3>
 
           <div className="relative overflow-hidden">

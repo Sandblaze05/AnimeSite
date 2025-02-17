@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import LoadMore from "./loadMore";
 
 const TorrentLinks = ({ episodes }) => {
+  const [visibileEpisodes, setVisibileEpisodes] = useState(5);
+  const [loading, setLoading] = useState(false);
+
+  const loadMoreEp = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setVisibileEpisodes((prev) => Math.min(prev + 5, episodes.length));
+      setLoading(false);
+    }, 500);
+  };
 
   if (!episodes || !Array.isArray(episodes) || episodes.length === 0) {
     return (
@@ -19,7 +30,7 @@ const TorrentLinks = ({ episodes }) => {
         <div className="absolute bottom-0 left-0 w-1/4 h-1 bg-gradient-to-r from-[#ff3d7f] to-transparent"></div>
       </h2>
       <div className="grid gap-4">
-        {episodes.map((episode, index) => (
+        {episodes.slice(0,visibileEpisodes).map((episode, index) => (
           <EpisodeCard
             key={episode.title}
             title={episode.title}
@@ -28,6 +39,7 @@ const TorrentLinks = ({ episodes }) => {
           />
         ))}
       </div>
+      {visibileEpisodes < episodes.length && <LoadMore loading={loading} onClick={loadMoreEp}/>}
     </div>
   );
 };
@@ -37,9 +49,11 @@ const EpisodeCard = ({ title, links, index }) => {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
   // useEffect(() => {
-  //   links.map((link) => {
-  //     console.log(link);
-  //   })
+  //   if(!(links && Array.isArray(links))){
+  //     const temp = links;
+  //     links = [];
+  //     links.push(temp);
+  //   }
   // })
 
   const animationStyle = {

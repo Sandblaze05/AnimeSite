@@ -16,12 +16,6 @@ const AnimeDetails = () => {
   const [error, setError] = useState("");
 
   const [episodes, setEpisodes] = useState([]);
-  const [loadingEpisodes, setLoadingEpisodes] = useState(true);
-  const [errorEpisodes, setErrorEpisodes] = useState("");
-
-  const [torrentReady, setTorrentReady] = useState(false);
-  const [torrentLinks, setTorrentLinks] = useState([]);
-  const videoRef = useRef(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -69,20 +63,30 @@ const AnimeDetails = () => {
   }, [id]);
 
   useEffect(() => {
+    let flag=false;
     if (!anime?.title) return;
+    if (anime?.type == 'Movie') {flag=true;}
     let isCancelled = false;
     const fetchEpisodes = async () => {
       try {
-        const response = await fetch(
-          `https://anime-backend-psi.vercel.app/episodes?q=${anime?.title}`
-        );
+        const response = flag ? await fetch(`https://animebackend-production.up.railway.app/search?q=${anime?.title}`)
+                              : await fetch(`https://animebackend-production.up.railway.app/episodes?q=${anime?.title}`);
         const data1 = await response.json();
         if (data1.error) throw new Error(data1.error);
+        let formattedEpisodes = [];
         if (!isCancelled) {
-          const formattedEpisodes = Object.entries(data1).map(([episodeTitle, links]) => ({
-            title: episodeTitle || `${anime?.title}`,
-            links: links.map(link => link.href) || [],
-          }));
+          if (!flag) {
+            formattedEpisodes = Object.entries(data1).map(([episodeTitle, links]) => ({
+              title: episodeTitle || `${anime?.title}`,
+              links: links.map(link => link.href) || [],
+            }));
+          }
+          else {
+            formattedEpisodes = data1.map((ep) => ({
+              title: ep.title || `${anime?.title}`,
+              links: ep.links[0]?.href ? [ep.links[0].href] : [],
+            }));
+          }
           // Object.entries(data1).map(([episodeTitle, links]) => {
           //   let a=links.map(link => link.href);
           //   console.log(a);
@@ -103,27 +107,6 @@ const AnimeDetails = () => {
       isCancelled = true;
     };
   }, [anime?.title]);
-
-  const playTorrent = (magnet) => {
-    if (!window.WebTorrent) {
-      console.error("WebTorrent not found");
-      return;
-    }
-
-    const client = new WebTorrent();
-    client.add(magnet, (torrent) => {
-      console.log("Torrent added:", torrent);
-      const file = torrent.files.find(
-        (file) => file.name.endsWith(".mp4") || file.name.endsWith(".mkv")
-      );
-
-      if (file) {
-        console.log("File found:", file);
-        file.renderTo(videoRef.current, { autoplay: true });
-        setTorrentReady(true);
-      }
-    });
-  };
 
   if (error) return <p className="text-center text-red-500">{error}</p>;
   if (!anime) return null;
