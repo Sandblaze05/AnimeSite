@@ -225,11 +225,11 @@ const Home = () => {
         {/* Top Anime */}
         <section className="relative p-4">
           <h3 className="text-2xl font-prompt">
-            <span className="bg-gradient-to-r from-[#c9676d] to-[#e07f84] bg-clip-text text-transparent text-2xl font-bold">
+            <span className="bg-gradient-to-r from-[#ff758c] to-[#ff7eb3] bg-clip-text text-transparent text-2xl font-bold">
               Top
             </span>
             Animes
-            <div className="absolute  w-1/8 h-1 bg-gradient-to-r from-[#c9676d] to-transparent"></div>
+            <div className="absolute  w-1/8 h-1 bg-gradient-to-r from-[#ff758c] to-transparent"></div>
           </h3>
 
           <div className="relative overflow-hidden">
@@ -288,11 +288,11 @@ const Home = () => {
         {/* top movies */}
         <section className="relative p-4">
           <h3 className="text-2xl font-prompt">
-            <span className="bg-gradient-to-r from-[#c9676d] to-[#e07f84] bg-clip-text text-transparent text-2xl font-bold">
+            <span className="bg-gradient-to-r from-[#ff758c] to-[#ff7eb3] bg-clip-text text-transparent text-2xl font-bold">
               Top
             </span>
             Movies
-            <div className="absolute  w-1/8 h-1 bg-gradient-to-r from-[#c9676d] to-transparent"></div>
+            <div className="absolute  w-1/8 h-1 bg-gradient-to-r from-[#ff758c] to-transparent"></div>
           </h3>
 
           <div className="relative overflow-hidden">
