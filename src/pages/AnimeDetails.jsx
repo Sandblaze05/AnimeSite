@@ -69,8 +69,8 @@ const AnimeDetails = () => {
     let isCancelled = false;
     const fetchEpisodes = async () => {
       try {
-        const response = flag ? await fetch(`https://animebackend-production.up.railway.app/search?q=${anime?.title}`)
-                              : await fetch(`https://animebackend-production.up.railway.app/episodes?q=${anime?.title}`);
+        const response = flag ? await fetch(`https://anime-backend-psi.vercel.app/search?q=${anime?.title}`)
+                              : await fetch(`https://anime-backend-psi.vercel.app/episodes?q=${anime?.title}`);
         const data1 = await response.json();
         if (data1.error) throw new Error(data1.error);
         let formattedEpisodes = [];
